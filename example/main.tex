@@ -1,34 +1,56 @@
-% The "%" marks a comment line, ignored by LaTeX.
-
-% Build system stuff
+% This comment block defines imports for texbuild
 % -- begin imports --
-% import section1 as bar
-% import SeaCreatures/Octopus/octopus as octopus
+% import SeaCreatures/sea_creatures as sc
+% import LandCreatures/land_creatures as lc
 % -- end imports --
+% Each import line has the path to the imported file, and an alias.
 
-\documentclass[twocolumn]{article}
-\usepackage{graphicx}
+\documentclass{article}
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily,
+  columns=fullflexible,
+  frame=single,
+  breaklines=true,
+}
 \usepackage{amsmath}
-\usepackage{amssymb}
+\usepackage{graphicx}
 \usepackage{modular}
 
-\author{Daniel}
-\title{LaTeX build demo}
+\author{Daniel Sank}
+\title{texbuild demo}
 
 \begin{document}
 \maketitle
 
-This is a reference to Equation (\ref{bar.equation}).
-This is a reference to Equation (\ref{octopus.octoCoolness})
+This document illustrates the use of \texttt{texbuild}, a build system for \LaTeX{} documents.
+We're going to label three different equations in three different files all with the same label, and we'll still be able to refer to each one.
 
-\subimportlevel{./}{section1.tex}{0}
+First, we label an equation as ``\texttt{equation}'' in the main document
+% The "% export" here makes the labeled item importable into other files.
+\begin{equation}
+  \ln(\exp(x)) = x \label{equation} % export
+\end{equation}
+and refer to it, i.e. as Equation~(\ref{equation}).
+
+In a moment, we're going to include two sub-files, \texttt{SeaCreatures/sea\_creatures.tex} and \texttt{LandCreatures/land\_creatures.tex}, each of which has an equation with label ``\texttt{equation}''.
+Normally, this would be a problem, as the namespace for labeled items in \LaTeX{} is global and no two items can have the same label.
+However, through the power of \texttt{texbuild}, we can refer to them via namespaces.
+Behold: the equation in \texttt{SeaCreatures/sea\_creatures.tex} is Equation~(\ref{sc.equation}) and the equation in \texttt{LandCreatures/land\_creatures.tex} is Equation~(\ref{lc.equation}).
+We can refer to the figure too, i.e. as Figure~(\ref{sc.figure}).
+Now let's actually include those files.
+
 \subimportlevel{./SeaCreatures/}{sea_creatures.tex}{0}
 \subimportlevel{./LandCreatures/}{land_creatures.tex}{0}
 
-This is our own equation
-\begin{equation}
-  \ln(\exp(x)) = x \, . \label{equation} % export
-\end{equation}
-We reference it as Equation (\ref{equation}).
+
+\levelstay{The sources}
+
+The source for this main file is
+\lstinputlisting{../main.tex}
+The sources for \texttt{sea\_creatures.tex} is
+\lstinputlisting{../SeaCreatures/sea_creatures.tex}
+and the source for \texttt{land\_creatures.tex} is
+\lstinputlisting{../LandCreatures/land_creatures.tex}
 
 \end{document}

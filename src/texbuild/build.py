@@ -15,7 +15,7 @@ import attrs
 RE_IMPORTS = re.compile(r'% -- begin imports --\n(.*)% -- end imports --\n', flags=re.DOTALL)
 RE_SINGLE_IMPORT = re.compile(r'% import (.+) as (\w+)')
 RE_EXPORT = re.compile(r'\\label{(.+)} +% export')
-RE_REF = re.compile(r'\\ref{(.+\.)?(.+)}')
+RE_REF = re.compile(r'\\ref{(\w+\.)?(\w+)}{1}')
 RE_PDF = re.compile(r'(?:\\includegraphics|\\quickfig).*{(\w+\.pdf)}')
 RE_TEX_SUBIMPORTLEVEL = re.compile(r'\\subimportlevel{(.+)}{(.+)}{(.+)}')
 RE_TEX_INPUT = re.compile(r'\\input{(.+)}')
