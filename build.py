@@ -39,6 +39,13 @@ def path_from_to(source: pathlib.Path, target: pathlib.Path) -> pathlib.Path:
 def find_included_tex_files_single_file(
         file: pathlib.Path,
 ) -> Set[pathlib.Path]:
+    """Find all TeX files included in a single file.
+
+    Args:
+        file: Path to the file in which we look for other TeX file includes.
+
+    Returns a set of paths to included files.
+    """
     with open(file, 'r') as readfile:
         text = readfile.read()
     paths: Set[pathlib.Path] = set()
@@ -57,16 +64,16 @@ def find_included_tex_files_recursively(
         files_to_check: Set[pathlib.Path],
         files_found: Set[pathlib.Path],
 ) -> Set[pathlib.Path]:
-    r"""Recusrively all TeX files used by a given set of root TeX files.
+    r"""Recusrively find all TeX files included by a given set of root TeX files.
 
     This works by recursively following the graph defined by \subimportlevel
-    calls, with root notes at each file in files_to_check.
+    and \input calls, with root notes at each file in files_to_check.
 
     Args:
-        files_to_check: Set of paths where we start looking for TeX imports.
-        files_found: Paths we've already identified as in the graph of imports.
+        files_to_check: Set of paths where we start looking for TeX includes.
+        files_found: Paths we've already identified as in the graph of includes.
 
-    Reeturns a set of relative paths to imported files.
+    Returns a set of relative paths to included files.
     """
     new_files_found: Set[pathlib.Path] = set()
     if len(files_to_check ) == 0:
@@ -83,12 +90,13 @@ def find_included_tex_files_recursively(
 
 
 def find_included_tex_files(file: pathlib.Path) -> Set[pathlib.Path]:
-    """Find all TeX files used by a given main TeX file.
+    """Find all TeX files included by a given TeX file.
 
     Args:
-        file: Starting point, i.e. main TeX file.
+        file: Starting point, i.e. main TeX file. We find all other TeX files
+            (recursively) included by this file.
 
-    Reeturns a set of relative paths to files imported into the main file.
+    Reeturns a set of relative paths to files included by the main file.
     """
     return find_included_tex_files_recursively(
             files_to_check=set([file]),
@@ -97,11 +105,13 @@ def find_included_tex_files(file: pathlib.Path) -> Set[pathlib.Path]:
 
 
 class PrefixPool:
+    """Generates unique prefixes."""
     def __init__(self):
         self.prefixes: Set[str] = set()
 
     def get(self) -> str:
         import numpy as np
+        # TODO: Remove dependence on numpy
         r = '0'  # Mollify the typechecker
         while 1:
             r = str(int(10**10 * np.random.random()))[0:10]
@@ -118,13 +128,17 @@ class Export:
 
 @attrs.define(frozen=True)
 class Module:
-    """
+    """A single TeX file.
+
     Attributes
         path: Path to this module's source file.
         exports: All referenceable exports from this module.
         prefix: Prefix prepended to all export labels in this module.
         text: The text of the TeX source file, with all exports rewritten with
             the module's prefix.
+        pdfs: Set of paths to pdf files included by this module.
+
+    TODO: extend to other image types, beyond just PDF.
     """
     path: pathlib.Path
     exports: FrozenSet[Export]
@@ -137,6 +151,14 @@ def file_to_module(
         file: pathlib.Path,
         prefix: str,
 ) -> Module:
+    """Get a Module representation of a single TeX file.
+
+    Args:
+        file: Path to the TeX file.
+        prefix: Prefix to prepend to exported objects.
+
+    Returns a Module representing this file.
+    """
     with open(file, 'r') as infile:
         text = infile.read()
     exports = frozenset(Export(label=l) for l in RE_EXPORT.findall(text))
@@ -158,6 +180,14 @@ def file_to_module(
 
 
 def find_imports(text: str) -> Set[Tuple[str, str]]:
+    """Get the imports from the text of a TeX file.
+
+    Args:
+        text: Text of a TeX file.
+
+    Returns a set of (str, str) each of which represents a module path and our
+    alias for that module.
+    """
     result_imports = RE_IMPORTS.search(text)
     if result_imports is None:
         return set()
@@ -173,6 +203,17 @@ def find_imports(text: str) -> Set[Tuple[str, str]]:
 
 
 def get_mangled_text(module: Module, modules: Set[Module]) -> str:
+    r"""Mangle text in a module.
+
+    Args:
+        module: The module whose text we want to mangle.
+        modules: The modules available, from which we can import.
+
+    We do the following:
+        * Add prefixes to any imported objects, i.e. calles to \ref{...}.
+
+    Returns: Mangled text.
+    """
     modules_by_relative_path = {
             path_from_to(module.path.parent, m.path): m
             for m in modules
@@ -199,18 +240,28 @@ def build(
         main_path: pathlib.Path,
         build_path: pathlib.Path,
 ) -> None:
+    """Perform all steps needed to build the new TeX files."""
+    # 1. Find every TeX file needed to build our document.
     all_paths = find_included_tex_files(main_path)
+
+    # 2. Build a Module for each TeX file.
     prefix_pool = PrefixPool()
     modules = {file_to_module(p, prefix_pool.get()) for p in all_paths}
+
+    # 3. Get mangled text for each Module.
     all_texts = {
             module.path: get_mangled_text(module, modules)
             for module in modules
     }
+
+    # 4. Write out all mangled text to a build directory.
     for path, text in all_texts.items():
         outpath = build_path / path
         print(f"Writing to {outpath}")
         outpath.parent.mkdir(exist_ok=True, parents=True)
         outpath.write_text(text)
+
+    # 5. Copy image files to the build directory.
     for module in modules:
         for path_pdf_relative_to_module in module.pdfs:
             path_pdf = module.path.parent / path_pdf_relative_to_module
