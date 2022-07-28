@@ -269,7 +269,7 @@ def build(
             shutil.copy(path_pdf, new_path)
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="Build a TeX document")
     args = parser.parse_args()
     build_path = pathlib.Path('build')
@@ -280,3 +280,7 @@ if __name__ == "__main__":
     with set_directory(build_path):
         os.system("pdflatex main.tex")
         os.system("pdflatex main.tex")
+
+
+if __name__ == "__main__":
+    main()
