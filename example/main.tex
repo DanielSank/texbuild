@@ -1,0 +1,34 @@
+% The "%" marks a comment line, ignored by LaTeX.
+
+% Build system stuff
+% -- begin imports --
+% import section1 as bar
+% import SeaCreatures/Octopus/octopus as octopus
+% -- end imports --
+
+\documentclass[twocolumn]{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{modular}
+
+\author{Daniel}
+\title{LaTeX build demo}
+
+\begin{document}
+\maketitle
+
+This is a reference to Equation (\ref{bar.equation}).
+This is a reference to Equation (\ref{octopus.octoCoolness})
+
+\subimportlevel{./}{section1.tex}{0}
+\subimportlevel{./SeaCreatures/}{sea_creatures.tex}{0}
+\subimportlevel{./LandCreatures/}{land_creatures.tex}{0}
+
+This is our own equation
+\begin{equation}
+  \ln(\exp(x)) = x \, . \label{equation} % export
+\end{equation}
+We reference it as Equation (\ref{equation}).
+
+\end{document}
