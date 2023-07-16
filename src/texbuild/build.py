@@ -12,13 +12,13 @@ import shutil
 import attrs
 
 
-RE_IMPORTS = re.compile(r'% -- begin imports --\n(.*)% -- end imports --\n', flags=re.DOTALL)
+RE_IMPORTS = re.compile(r'% -- begin imports --\n(.*)% -- end imports --\n', flags=re.DOTALL | re.MULTILINE)
 RE_SINGLE_IMPORT = re.compile(r'% import (.+) as (\w+)')
 RE_EXPORT = re.compile(r'\\label{(.+)} +% export')
-RE_REF = re.compile(r'\\ref{(\w+\.)?(\w+)}{1}')
+RE_REF = re.compile(r'\\ref\{(\w+\.)?([a-zA-Z0-9_:]+)\}', flags=re.MULTILINE)
 RE_PDF = re.compile(r'(?:\\includegraphics|\\quickfig).*{(\w+\.pdf)}')
-RE_TEX_SUBIMPORTLEVEL = re.compile(r'\\subimportlevel{(.+)}{(.+)}{(.+)}')
-RE_TEX_INPUT = re.compile(r'\\input{(.+)}')
+RE_TEX_SUBIMPORTLEVEL = re.compile(r'^\\subimportlevel{(.+)}{(.+)}{(.+)}', flags=re.MULTILINE)
+RE_TEX_INPUT = re.compile(r'^\\input{(.+)}', flags=re.MULTILINE)
 
 
 @contextlib.contextmanager
@@ -46,7 +46,7 @@ def find_included_tex_files_single_file(
 
     Returns a set of paths to included files.
     """
-    with open(file, 'r') as readfile:
+    with open(file.resolve(), 'r') as readfile:
         text = readfile.read()
     paths: Set[pathlib.Path] = set()
 
@@ -159,7 +159,7 @@ def file_to_module(
 
     Returns a Module representing this file.
     """
-    with open(file, 'r') as infile:
+    with open(file.resolve(), 'r') as infile:
         text = infile.read()
     exports = frozenset(Export(label=l) for l in RE_EXPORT.findall(text))
     pdfs = frozenset(RE_PDF.findall(text))
