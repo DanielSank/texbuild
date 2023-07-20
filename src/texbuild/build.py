@@ -228,6 +228,9 @@ def get_mangled_text(module: Module, modules: Set[Module]) -> str:
         module_alias, export_name = matcher.groups()
         if module_alias is None:  # This is an internal reference.
             import_from_module = modules_by_relative_path[module.path.relative_to(module.path.parent)]
+            exports_by_name = {e.label: e for e in import_from_module.exports}
+            if export_name not in exports_by_name.keys():  # Ref'd item isn't exported
+                return f"\\ref{{{export_name}}}"
         else:  # This is an external reference.
             import_from_module = imported_modules[module_alias[:-1]]  # Drop the dot
         exports_by_name = {e.label: e for e in import_from_module.exports}

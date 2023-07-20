@@ -1,4 +1,4 @@
-example/build/
+dist/
 
 __pycache__/
 *.py[cod]
