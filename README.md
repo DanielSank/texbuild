@@ -61,4 +61,4 @@ $ git clone https://github.com/DanielSank/texbuild
 $ cd texbuild/example
 $ texbuild
 
-This produces `texbuild/example/build/main.pdf`, which illustrates the use of `texbuild`.
+This produces `texbuild/example/texbuild-out/main.pdf`, which illustrates the use of `texbuild`.
