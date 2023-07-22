@@ -275,7 +275,7 @@ def build(
 def main():
     parser = argparse.ArgumentParser(description="Build a TeX document")
     args = parser.parse_args()
-    build_path = pathlib.Path('build')
+    build_path = pathlib.Path('texbuild-out')
     build(
             pathlib.Path('main.tex'),
             build_path,
