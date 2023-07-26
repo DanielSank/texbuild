@@ -33,7 +33,7 @@ def set_directory(path: pathlib.Path):
 
 def path_from_to(source: pathlib.Path, target: pathlib.Path) -> pathlib.Path:
     """Get relative path from source to target"""
-    return pathlib.Path(os.path.relpath(target.resolve(), source.resolve()))
+    return pathlib.Path(os.path.relpath(target.absolute(), source.absolute()))
 
 
 def find_included_tex_files_single_file(
