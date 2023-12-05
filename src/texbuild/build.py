@@ -271,6 +271,12 @@ def build(
             new_path = build_path / path_pdf
             shutil.copy(path_pdf, new_path)
 
+    # 6. Copy references to the build directory.
+    files = os.listdir(main_path.parent)
+    for file in files:
+        if file.endswith(".bib"):
+            shutil.copy(file, build_path)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Build a TeX document")
@@ -281,6 +287,9 @@ def main():
             build_path,
     )
     with set_directory(build_path):
+        os.system("pdflatex main.tex")
+        os.system("pdflatex main.tex")
+        os.system("bibtex main.aux")
         os.system("pdflatex main.tex")
         os.system("pdflatex main.tex")
 
