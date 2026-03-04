@@ -16,7 +16,7 @@ RE_IMPORTS = re.compile(r'% -- begin imports --\n(.*)% -- end imports --\n', fla
 RE_SINGLE_IMPORT = re.compile(r'% import (.+) as (\w+)')
 RE_EXPORT = re.compile(r'\\label{(.+)} +% export')
 RE_REF = re.compile(r'\\ref\{(\w+\.)?([a-zA-Z0-9_:]+)\}', flags=re.MULTILINE)
-RE_PDF = re.compile(r'.*(\\includegraphics|\\quickfig).*\{([\w-]+\.pdf)\}')
+RE_PDF = re.compile(r'(?<!%).*(\\includegraphics|\\quickfig).*\{([\w-]+\.pdf)\}')
 RE_TEX_SUBIMPORTLEVEL = re.compile(r'^\\subimportlevel{(.+)}{(.+)}{(.+)}', flags=re.MULTILINE)
 RE_TEX_INPUT = re.compile(r'^\\input{(.+)}', flags=re.MULTILINE)
 
